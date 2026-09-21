@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.seki999.echowordy.ui.util.KeepScreenOn
 
 @Composable
 fun ReviewScreen(
@@ -40,6 +41,8 @@ fun ReviewScreen(
     onOpenUnknownList: (Long) -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    KeepScreenOn()
 
     BackHandler(enabled = !uiState.isCompleted) {
         viewModel.requestStop()
