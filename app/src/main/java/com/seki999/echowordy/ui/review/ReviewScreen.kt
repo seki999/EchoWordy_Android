@@ -128,7 +128,10 @@ private fun ReviewPlaybackContent(uiState: ReviewUiState, viewModel: ReviewViewM
 
             Text(
                 text = uiState.currentCard?.body.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontSize = MaterialTheme.typography.bodyLarge.fontSize * 1.2f,
+                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f,
+                ),
             )
         }
 

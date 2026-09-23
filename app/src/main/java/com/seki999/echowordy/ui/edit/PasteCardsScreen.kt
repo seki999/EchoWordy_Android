@@ -5,7 +5,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -43,6 +47,8 @@ fun PasteCardsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
             Text(
@@ -56,7 +62,7 @@ fun PasteCardsScreen(
                 onValueChange = viewModel::onTextChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .heightIn(min = 260.dp)
                     .padding(top = 12.dp),
                 placeholder = { Text("abstain\n英式 /əbˈsteɪn/\n意思 : 戒除；避免\n\ninaugural\n英式 /ɪˈnɔːɡjərəl/\n意思 : 就职的") },
             )
