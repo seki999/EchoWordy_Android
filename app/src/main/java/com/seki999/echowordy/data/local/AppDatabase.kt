@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(
     entities = [VocabularyListEntity::class, VocabularyCardEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -27,7 +27,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     DATABASE_NAME,
-                ).build().also { INSTANCE = it }
+                ).addMigrations(MIGRATION_1_2).build().also { INSTANCE = it }
             }
     }
 }

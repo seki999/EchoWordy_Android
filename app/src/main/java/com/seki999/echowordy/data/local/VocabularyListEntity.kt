@@ -9,4 +9,5 @@ data class VocabularyListEntity(
     val name: String,
     val createdAt: Long,
     val updatedAt: Long,
+    val sortOrder: Int = 0,
 )

@@ -33,4 +33,7 @@ interface VocabularyRepository {
 
     /** Replaces every card in the list with [cards], preserving their order. */
     suspend fun replaceCards(listId: Long, cards: List<ParsedCard>)
+
+    /** Persists a new manual display order for lists, as given by [orderedListIds]. */
+    suspend fun reorderLists(orderedListIds: List<Long>)
 }

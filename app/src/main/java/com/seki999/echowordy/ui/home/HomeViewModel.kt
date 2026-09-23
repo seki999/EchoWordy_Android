@@ -32,4 +32,8 @@ class HomeViewModel(private val repository: VocabularyRepository) : ViewModel() 
             _events.emit(HomeEvent.ListCreated(id))
         }
     }
+
+    fun reorderLists(orderedListIds: List<Long>) {
+        viewModelScope.launch { repository.reorderLists(orderedListIds) }
+    }
 }

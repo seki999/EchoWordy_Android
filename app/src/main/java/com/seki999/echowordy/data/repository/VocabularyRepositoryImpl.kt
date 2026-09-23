@@ -41,13 +41,19 @@ class VocabularyRepositoryImpl(
 
     override suspend fun createList(name: String): Long {
         val now = System.currentTimeMillis()
-        return listDao.insert(VocabularyListEntity(name = name, createdAt = now, updatedAt = now))
+        val nextSortOrder = listDao.getMaxSortOrder() + 1
+        return listDao.insert(
+            VocabularyListEntity(name = name, createdAt = now, updatedAt = now, sortOrder = nextSortOrder)
+        )
     }
 
     override suspend fun createListWithCards(name: String, cards: List<ParsedCard>): Long =
         database.withTransaction {
             val now = System.currentTimeMillis()
-            val listId = listDao.insert(VocabularyListEntity(name = name, createdAt = now, updatedAt = now))
+            val nextSortOrder = listDao.getMaxSortOrder() + 1
+            val listId = listDao.insert(
+                VocabularyListEntity(name = name, createdAt = now, updatedAt = now, sortOrder = nextSortOrder)
+            )
             if (cards.isNotEmpty()) {
                 cardDao.insertAll(cards.mapIndexed { index, card -> card.toEntity(listId, index, now) })
             }
@@ -74,6 +80,14 @@ class VocabularyRepositoryImpl(
             val existing = listDao.getByIdOnce(listId)
             if (existing != null) {
                 listDao.update(existing.copy(updatedAt = now))
+            }
+        }
+    }
+
+    override suspend fun reorderLists(orderedListIds: List<Long>) {
+        database.withTransaction {
+            orderedListIds.forEachIndexed { index, id ->
+                listDao.updateSortOrder(id, index)
             }
         }
     }

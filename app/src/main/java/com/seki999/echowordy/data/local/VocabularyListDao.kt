@@ -17,10 +17,16 @@ interface VocabularyListDao {
         FROM vocabulary_lists l
         LEFT JOIN vocabulary_cards c ON c.listId = l.id
         GROUP BY l.id
-        ORDER BY l.createdAt ASC
+        ORDER BY l.sortOrder ASC
         """
     )
     fun observeListsWithCount(): Flow<List<VocabularyListWithCount>>
+
+    @Query("SELECT COALESCE(MAX(sortOrder), -1) FROM vocabulary_lists")
+    suspend fun getMaxSortOrder(): Int
+
+    @Query("UPDATE vocabulary_lists SET sortOrder = :sortOrder WHERE id = :listId")
+    suspend fun updateSortOrder(listId: Long, sortOrder: Int)
 
     @Query("SELECT * FROM vocabulary_lists WHERE id = :listId")
     fun observeById(listId: Long): Flow<VocabularyListEntity?>

@@ -83,4 +83,13 @@ class FakeVocabularyRepository : VocabularyRepository {
             VocabularyCard(id = nextCardId++, listId = listId, word = card.word, body = card.body, sortOrder = index)
         }.toMutableList()
     }
+
+    override suspend fun reorderLists(orderedListIds: List<Long>) {
+        val reordered = LinkedHashMap<Long, VocabularyList>()
+        orderedListIds.forEach { id -> lists[id]?.let { reordered[id] = it } }
+        lists.values.forEach { if (it.id !in reordered) reordered[it.id] = it }
+        lists.clear()
+        lists.putAll(reordered)
+        listsFlow.value = lists.values.toList()
+    }
 }
