@@ -15,6 +15,8 @@ interface SettingsRepository {
 
     companion object {
         const val DEFAULT_CARD_DURATION_MS = 2000L
-        val AVAILABLE_DURATIONS_MS = listOf(1000L, 1500L, 2000L, 2500L, 3000L, 4000L)
+        val AVAILABLE_DURATIONS_MS = listOf(
+            1000L, 1500L, 2000L, 2500L, 3000L, 4000L, 5000L, 6000L, 7000L, 8000L,
+        )
     }
 }
