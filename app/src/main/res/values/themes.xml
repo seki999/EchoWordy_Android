@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.EchoWordy" parent="android:Theme.Material.Light.NoActionBar" />
+    <style name="Theme.EchoWordy" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">#F6F4EE</item>
+        <item name="android:statusBarColor">#F6F4EE</item>
+        <item name="android:navigationBarColor">#F6F4EE</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>

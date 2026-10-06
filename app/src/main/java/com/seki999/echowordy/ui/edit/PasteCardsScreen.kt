@@ -24,7 +24,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.seki999.echowordy.ui.theme.EchoError40
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -77,7 +76,7 @@ fun PasteCardsScreen(
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = EchoError40,
+                    color = MaterialTheme.colorScheme.error,
                     modifier = Modifier.padding(top = 4.dp),
                 )
             }

@@ -14,8 +14,29 @@ private val Context.settingsDataStore by preferencesDataStore(name = "echowordy_
 class SettingsRepositoryImpl(private val context: Context) : SettingsRepository {
 
     private object Keys {
+        val READING_THEME = stringPreferencesKey("reading_theme")
+        val READING_FONT_SIZE = stringPreferencesKey("reading_font_size")
         val CARD_DURATION_MS = longPreferencesKey("card_duration_ms")
         val SELECTED_VOICE_NAME = stringPreferencesKey("selected_voice_name")
+    }
+
+    override fun readingPreferencesFlow(): Flow<com.seki999.echowordy.domain.model.ReadingPreferences> =
+        context.settingsDataStore.data.map { prefs ->
+            com.seki999.echowordy.domain.model.ReadingPreferences(
+                theme = com.seki999.echowordy.domain.model.ReadingTheme.entries.firstOrNull {
+                    it.name == prefs[Keys.READING_THEME]
+                } ?: com.seki999.echowordy.domain.model.ReadingTheme.SOFT,
+                fontSize = com.seki999.echowordy.domain.model.ReadingFontSize.entries.firstOrNull {
+                    it.name == prefs[Keys.READING_FONT_SIZE]
+                } ?: com.seki999.echowordy.domain.model.ReadingFontSize.LARGE,
+            )
+        }
+
+    override suspend fun setReadingPreferences(preferences: com.seki999.echowordy.domain.model.ReadingPreferences) {
+        context.settingsDataStore.edit { prefs ->
+            prefs[Keys.READING_THEME] = preferences.theme.name
+            prefs[Keys.READING_FONT_SIZE] = preferences.fontSize.name
+        }
     }
 
     override fun cardDurationMsFlow(): Flow<Long> =

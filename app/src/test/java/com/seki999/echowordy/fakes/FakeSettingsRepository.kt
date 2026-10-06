@@ -8,6 +8,12 @@ class FakeSettingsRepository(
     initialDurationMs: Long = SettingsRepository.DEFAULT_CARD_DURATION_MS,
 ) : SettingsRepository {
 
+    private val reading = MutableStateFlow(com.seki999.echowordy.domain.model.ReadingPreferences())
+    override fun readingPreferencesFlow() = reading
+    override suspend fun setReadingPreferences(preferences: com.seki999.echowordy.domain.model.ReadingPreferences) {
+        reading.value = preferences
+    }
+
     private val durationFlow = MutableStateFlow(initialDurationMs)
     private val voiceFlow = MutableStateFlow<String?>(null)
 

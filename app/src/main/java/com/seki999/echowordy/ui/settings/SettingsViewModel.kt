@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 data class SettingsUiState(
+    val reading: com.seki999.echowordy.domain.model.ReadingPreferences = com.seki999.echowordy.domain.model.ReadingPreferences(),
     val cardDurationMs: Long = SettingsRepository.DEFAULT_CARD_DURATION_MS,
     val availableDurationsMs: List<Long> = SettingsRepository.AVAILABLE_DURATIONS_MS,
     val availableVoices: List<VoiceOption> = emptyList(),
@@ -29,14 +30,20 @@ class SettingsViewModel(
         settingsRepository.cardDurationMsFlow(),
         settingsRepository.selectedVoiceNameFlow(),
         ttsController.state,
-    ) { durationMs, voiceName, ttsState ->
+        settingsRepository.readingPreferencesFlow(),
+    ) { durationMs, voiceName, ttsState, reading ->
         SettingsUiState(
+            reading = reading,
             cardDurationMs = durationMs,
             availableVoices = if (ttsState == TtsState.READY) ttsController.availableAmericanVoices() else emptyList(),
             selectedVoiceName = voiceName,
             ttsState = ttsState,
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SettingsUiState())
+
+    fun setReadingPreferences(preferences: com.seki999.echowordy.domain.model.ReadingPreferences) {
+        viewModelScope.launch { settingsRepository.setReadingPreferences(preferences) }
+    }
 
     fun setCardDuration(durationMs: Long) {
         viewModelScope.launch { settingsRepository.setCardDurationMs(durationMs) }

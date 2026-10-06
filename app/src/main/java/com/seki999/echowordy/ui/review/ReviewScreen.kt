@@ -1,6 +1,15 @@
 package com.seki999.echowordy.ui.review
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
+import com.seki999.echowordy.ui.theme.LocalReadingPreferences
+import com.seki999.echowordy.ui.theme.ReadingDimensions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +25,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -92,99 +100,126 @@ private fun LoadingContent() {
 
 @Composable
 private fun ReviewPlaybackContent(uiState: ReviewUiState, viewModel: ReviewViewModel) {
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Text(text = uiState.listName, style = MaterialTheme.typography.titleLarge)
-            Text(text = uiState.progressText, style = MaterialTheme.typography.titleLarge)
+    val scale = LocalReadingPreferences.current.fontSize.scale
+    val scroll = rememberScrollState()
+    LaunchedEffect(uiState.currentCard?.id) { scroll.scrollTo(0) }
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val horizontal = if (maxWidth >= 420.dp) ReadingDimensions.WideScreenHorizontalPadding else ReadingDimensions.ScreenHorizontalPadding
+        val controlMeasurer = rememberTextMeasurer()
+        val labelWidth = with(LocalDensity.current) {
+            controlMeasurer.measure("Previous", TextStyle(fontSize = 18.sp, fontWeight = FontWeight.SemiBold)).size.width.toDp()
         }
+        val stacked = (maxWidth - horizontal * 2 - 16.dp) / 3 < labelWidth + 16.dp || maxHeight < 400.dp
+        Column(modifier = Modifier.fillMaxSize().padding(horizontal = horizontal, vertical = 12.dp)
+            .then(if (stacked) Modifier.verticalScroll(scroll) else Modifier)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(text = uiState.listName, modifier = Modifier.weight(1f).padding(end = 12.dp), style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(text = uiState.progressText, style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
 
-        if (uiState.ttsUnavailable) {
-            Text(
-                text = "American English voice is unavailable.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.error,
-                modifier = Modifier.padding(top = 8.dp),
-            )
-        }
+            if (uiState.ttsUnavailable) {
+                Text(
+                    text = "American English voice is unavailable.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
 
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            Text(
-                text = uiState.currentCard?.word.orEmpty(),
-                fontSize = 44.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-            )
+            Column(
+                modifier = Modifier
+                    .then(if (stacked) Modifier else Modifier.weight(1f).verticalScroll(scroll))
+                    .fillMaxWidth()
+                    .padding(top = 16.dp)
+                    .padding(bottom = 24.dp),
+            ) {
+                FittingWord(uiState.currentCard?.word.orEmpty(), (ReadingDimensions.WordTitleSize.value * scale).coerceAtMost(ReadingDimensions.WordTitleMax.value))
+                Spacer(Modifier.height(ReadingDimensions.WordToIpa))
+                val blocks = remember(uiState.currentCard?.body) { readingBlocks(uiState.currentCard?.body.orEmpty()) }
+                blocks.forEachIndexed { index, block ->
+                    val size = when(block.role) {
+                        ReadingRole.IPA -> ReadingDimensions.IpaTextSize
+                        ReadingRole.MEANING -> ReadingDimensions.MeaningTextSize
+                        ReadingRole.COLLOCATION -> ReadingDimensions.CollocationTextSize
+                        ReadingRole.TRANSLATION -> ReadingDimensions.CollocationChineseSize
+                        ReadingRole.CHINESE_EXAMPLE -> ReadingDimensions.ExampleChineseSize
+                        else -> ReadingDimensions.ExampleEnglishSize
+                    } * scale
+                    Text(block.text, fontSize = size, lineHeight = size * ReadingDimensions.ReadingLineSpacing,
+                        fontWeight = if (block.role == ReadingRole.MEANING) FontWeight.SemiBold else FontWeight.Medium,
+                        color = if (block.role == ReadingRole.IPA || block.role == ReadingRole.TRANSLATION)
+                            MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+                    if (index < blocks.lastIndex) Spacer(Modifier.height(when(block.role) {
+                        ReadingRole.IPA -> ReadingDimensions.IpaToMeaning
+                        ReadingRole.CHINESE_EXAMPLE -> ReadingDimensions.ExampleSpacing
+                        else -> ReadingDimensions.SectionSpacing
+                    }))
+                }
+            }
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            if (uiState.isCurrentMarkedUnknown) {
+                OutlinedButton(
+                    onClick = viewModel::removeCurrentFromUnknown,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp).heightIn(min = ReadingDimensions.ControlHeight),
+                ) {
+                    Text("Marked as Unknown — Remove from Unknown")
+                }
+            } else {
+                OutlinedButton(
+                    onClick = viewModel::markCurrentAsUnknown,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp).heightIn(min = ReadingDimensions.ControlHeight),
+                ) {
+                    Text("Mark as Unknown")
+                }
+            }
 
-            Text(
-                text = uiState.currentCard?.body.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize * 1.2f,
-                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f,
+            val controls: @Composable (Modifier) -> Unit = { modifier ->
+                OutlinedButton(onClick = viewModel::previous, enabled = uiState.currentIndex > 0,
+                    modifier = modifier.heightIn(min = ReadingDimensions.ControlHeight),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 12.dp)) {
+                    Text("Previous", fontWeight = FontWeight.SemiBold, fontSize = 18.sp, maxLines = 1, softWrap = false)
+                }
+                Button(onClick = { if (uiState.isPaused) viewModel.resume() else viewModel.pause() },
+                    modifier = modifier.heightIn(min = ReadingDimensions.ControlHeight),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 12.dp)) {
+                    Text(if (uiState.isPaused) "Play" else "Pause", fontSize = 20.sp, maxLines = 1, softWrap = false)
+                }
+                OutlinedButton(onClick = viewModel::next, modifier = modifier.heightIn(min = ReadingDimensions.ControlHeight),
+                    contentPadding = PaddingValues(horizontal = 4.dp, vertical = 12.dp)) {
+                    Text("Next", fontSize = 18.sp, maxLines = 1, softWrap = false)
+                }
+            }
+            if (stacked) Column(Modifier.fillMaxWidth().padding(top = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                controls(Modifier.fillMaxWidth())
+            } else Row(Modifier.fillMaxWidth().padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                controls(Modifier.weight(1f))
+            }
+
+            OutlinedButton(
+                onClick = viewModel::requestStop,
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).heightIn(min = ReadingDimensions.ControlHeight),
+                colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                    contentColor = MaterialTheme.colorScheme.error,
                 ),
-            )
+            ) {
+                Text("Stop")
+            }
         }
+    }
+}
 
-        if (uiState.isCurrentMarkedUnknown) {
-            OutlinedButton(
-                onClick = viewModel::removeCurrentFromUnknown,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(52.dp),
-            ) {
-                Text("Marked as Unknown — Remove from Unknown")
-            }
-        } else {
-            OutlinedButton(
-                onClick = viewModel::markCurrentAsUnknown,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(52.dp),
-            ) {
-                Text("Mark as Unknown")
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            OutlinedButton(
-                onClick = viewModel::previous,
-                enabled = uiState.currentIndex > 0,
-                modifier = Modifier.weight(1f).height(56.dp),
-            ) {
-                Text("Previous")
-            }
-            Button(
-                onClick = { if (uiState.isPaused) viewModel.resume() else viewModel.pause() },
-                modifier = Modifier.weight(1f).height(56.dp),
-            ) {
-                Text(if (uiState.isPaused) "Resume" else "Pause")
-            }
-            OutlinedButton(
-                onClick = viewModel::next,
-                modifier = Modifier.weight(1f).height(56.dp),
-            ) {
-                Text("Next")
-            }
-        }
-
-        OutlinedButton(
-            onClick = viewModel::requestStop,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
-                contentColor = MaterialTheme.colorScheme.error,
-            ),
-        ) {
-            Text("Stop")
-        }
+@Composable
+private fun FittingWord(word: String, initialSize: Float) {
+    val measurer = rememberTextMeasurer()
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val width = with(LocalDensity.current) { maxWidth.roundToPx() }
+        var size = initialSize
+        while (size > 16f && measurer.measure(word, TextStyle(fontSize = size.sp, fontWeight = FontWeight.Bold), softWrap = false).size.width > width) size -= 1f
+        Text(word, fontSize = size.sp, lineHeight = (size * 1.2f).sp, fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -197,7 +232,7 @@ private fun ReviewResultContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState()).padding(24.dp),
         verticalArrangement = Arrangement.Center,
     ) {
         Text(
@@ -250,7 +285,7 @@ private fun ReviewResultContent(
         if (uiState.generatedUnknownListId != null) {
             Button(
                 onClick = { onOpenUnknownList(uiState.generatedUnknownListId) },
-                modifier = Modifier.fillMaxWidth().height(56.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = ReadingDimensions.ControlHeight),
             ) {
                 Text("Open Unknown Words")
             }
@@ -259,7 +294,7 @@ private fun ReviewResultContent(
 
         OutlinedButton(
             onClick = onBackToLists,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
+            modifier = Modifier.fillMaxWidth().heightIn(min = ReadingDimensions.ControlHeight),
         ) {
             Text("Back to Lists")
         }

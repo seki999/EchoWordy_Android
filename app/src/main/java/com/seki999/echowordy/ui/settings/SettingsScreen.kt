@@ -81,6 +81,23 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
+            Text("阅读主题", style = MaterialTheme.typography.titleLarge)
+            Column(Modifier.selectableGroup()) {
+                com.seki999.echowordy.domain.model.ReadingTheme.entries.forEach { theme ->
+                    ReadingOption(theme.label, uiState.reading.theme == theme) {
+                        viewModel.setReadingPreferences(uiState.reading.copy(theme = theme))
+                    }
+                }
+            }
+            Text("字体大小", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(top = 20.dp))
+            Column(Modifier.selectableGroup()) {
+                com.seki999.echowordy.domain.model.ReadingFontSize.entries.forEach { size ->
+                    ReadingOption(size.label, uiState.reading.fontSize == size) {
+                        viewModel.setReadingPreferences(uiState.reading.copy(fontSize = size))
+                    }
+                }
+            }
+            Spacer(Modifier.height(24.dp))
             Text(text = "Card Duration", style = MaterialTheme.typography.titleLarge)
             Text(
                 text = "How long each card stays on screen before the next one appears.",
@@ -228,6 +245,18 @@ fun SettingsScreen(viewModel: SettingsViewModel, onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+}
+
+@Composable
+private fun ReadingOption(label: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().selectable(selected, onClick = onClick, role = Role.RadioButton)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Text(label, modifier = Modifier.padding(start = 12.dp), style = MaterialTheme.typography.bodyLarge)
     }
 }
 

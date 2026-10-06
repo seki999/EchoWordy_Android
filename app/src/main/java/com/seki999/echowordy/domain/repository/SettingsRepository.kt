@@ -13,6 +13,9 @@ interface SettingsRepository {
 
     suspend fun setSelectedVoiceName(voiceName: String?)
 
+    fun readingPreferencesFlow(): Flow<com.seki999.echowordy.domain.model.ReadingPreferences>
+    suspend fun setReadingPreferences(preferences: com.seki999.echowordy.domain.model.ReadingPreferences)
+
     companion object {
         const val DEFAULT_CARD_DURATION_MS = 2000L
         val AVAILABLE_DURATIONS_MS = listOf(
