@@ -17,25 +17,29 @@ private val LightColors = lightColorScheme(
     onTertiary = EchoSurfaceLight,
     error = EchoError40,
     background = EchoBackgroundLight,
-    onBackground = EchoBlue40,
+    onBackground = EchoTextLight,
     surface = EchoSurfaceLight,
-    onSurface = EchoBlue40,
+    onSurface = EchoTextLight,
+    surfaceVariant = EchoSurfaceVariantLight,
+    onSurfaceVariant = EchoTextMutedLight,
 )
 
 private val DarkColors = darkColorScheme(
     primary = EchoBlue80,
-    onPrimary = EchoBlue40,
+    onPrimary = EchoBackgroundDark,
     primaryContainer = EchoBlue40,
     onPrimaryContainer = EchoBlueContainer,
     secondary = EchoTeal80,
-    onSecondary = EchoTeal40,
+    onSecondary = EchoBackgroundDark,
     tertiary = EchoAmber80,
-    onTertiary = EchoAmber40,
+    onTertiary = EchoBackgroundDark,
     error = EchoError80,
     background = EchoBackgroundDark,
-    onBackground = EchoSurfaceLight,
+    onBackground = EchoTextDark,
     surface = EchoSurfaceDark,
-    onSurface = EchoSurfaceLight,
+    onSurface = EchoTextDark,
+    surfaceVariant = EchoSurfaceVariantDark,
+    onSurfaceVariant = EchoTextMutedDark,
 )
 
 @Composable

@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -54,7 +55,9 @@ fun ReviewScreen(
         }
     }
 
-    Scaffold { padding ->
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when {
                 uiState.isLoading -> LoadingContent()
@@ -92,13 +95,25 @@ private fun LoadingContent() {
 
 @Composable
 private fun ReviewPlaybackContent(uiState: ReviewUiState, viewModel: ReviewViewModel) {
-    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 20.dp, vertical = 12.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 24.dp, vertical = 14.dp),
+    ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(text = uiState.listName, style = MaterialTheme.typography.titleLarge)
-            Text(text = uiState.progressText, style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = uiState.listName,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                text = uiState.progressText,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
 
         if (uiState.ttsUnavailable) {
@@ -114,63 +129,67 @@ private fun ReviewPlaybackContent(uiState: ReviewUiState, viewModel: ReviewViewM
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(top = 16.dp)
+                .padding(top = 18.dp)
                 .verticalScroll(rememberScrollState()),
         ) {
             Text(
                 text = uiState.currentCard?.word.orEmpty(),
-                fontSize = 44.sp,
+                fontSize = 56.sp,
+                lineHeight = 64.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary,
             )
 
-            HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 18.dp),
+                color = MaterialTheme.colorScheme.outlineVariant,
+            )
 
             Text(
                 text = uiState.currentCard?.body.orEmpty(),
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = MaterialTheme.typography.bodyLarge.fontSize * 1.2f,
-                    lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.2f,
-                ),
+                fontSize = 28.sp,
+                lineHeight = 42.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onBackground,
             )
         }
 
         if (uiState.isCurrentMarkedUnknown) {
             OutlinedButton(
                 onClick = viewModel::removeCurrentFromUnknown,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(52.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(50.dp),
             ) {
                 Text("Marked as Unknown — Remove from Unknown")
             }
         } else {
             OutlinedButton(
                 onClick = viewModel::markCurrentAsUnknown,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(52.dp),
+                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(50.dp),
             ) {
                 Text("Mark as Unknown")
             }
         }
 
         Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             OutlinedButton(
                 onClick = viewModel::previous,
                 enabled = uiState.currentIndex > 0,
-                modifier = Modifier.weight(1f).height(56.dp),
+                modifier = Modifier.weight(1f).height(52.dp),
             ) {
                 Text("Previous")
             }
             Button(
                 onClick = { if (uiState.isPaused) viewModel.resume() else viewModel.pause() },
-                modifier = Modifier.weight(1f).height(56.dp),
+                modifier = Modifier.weight(1f).height(52.dp),
             ) {
                 Text(if (uiState.isPaused) "Resume" else "Pause")
             }
             OutlinedButton(
                 onClick = viewModel::next,
-                modifier = Modifier.weight(1f).height(56.dp),
+                modifier = Modifier.weight(1f).height(52.dp),
             ) {
                 Text("Next")
             }
@@ -178,8 +197,8 @@ private fun ReviewPlaybackContent(uiState: ReviewUiState, viewModel: ReviewViewM
 
         OutlinedButton(
             onClick = viewModel::requestStop,
-            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(56.dp),
-            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(50.dp),
+            colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = MaterialTheme.colorScheme.error,
             ),
         ) {
